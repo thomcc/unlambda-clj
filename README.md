@@ -26,8 +26,8 @@ Turing-completeness (really just S and K).
 
 Unlambda functions are applied to each other with the `` ` `` (back-quote)
 character.  Every function takes exactly one argument (multiple arguments can be
-simulated via currying), so this is unambiguous. Unlambda has the following
-built in functions: 
+simulated via currying), meaning that this notation is unambiguous. Unlambda has
+the following built in functions:
 
 * `k`: The K combinator. Equivalent to the following Clojure code: `(fn [x] (fn
   [y] x))`. That is, ``` ``k<x><y> ``` evaluates to `<x>`. 
@@ -61,7 +61,7 @@ built in functions:
 
 
 ```
-     ``.λ`ci`.j`ci
+     ``.*`ci`.@`ci
 ```
 ## License
 
