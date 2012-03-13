@@ -1,4 +1,5 @@
-(ns unlambda-clj.core)
+(ns unlambda-clj.core
+  (:require [clojure.main :as main]))
 
 (def cur-char (atom nil))
 
@@ -8,14 +9,15 @@
      (letfn [(app [[func closure] arg cont]
 ;               (println (str "ARGS TO APP: " [[func closure] arg]))
                (case func
-                 "." (do (.write *out* closure) #(cont arg))
-                 "r" (do (.write *out* "\n") #(cont arg))
+                 "." (do (.write *out* (int closure)) #(cont arg))
+                 "r" (do (.write *out* (int \newline)) #(cont arg))
                  "i" #(cont arg)
                  "k" #(cont ["k1" arg])
                  "k1" #(cont closure)
                  "s" #(cont ["s1" arg])
                  "s1" #(cont ["s2" [closure, arg]])
-                 "s2" (let [[f1 f2] closure] #(ev ["`" [["`" [f1 arg]] ["`" [f2 arg]]]] cont))
+                 "s2" (let [[f1 f2] closure]
+                        #(ev ["`" [["`" [f1 arg]] ["`" [f2 arg]]]] cont))
                  "v" #(cont ["v", nil])
                  "d1" #(ev ["`" [closure, arg]] cont)
                  "e" (result-callback arg)
@@ -38,21 +40,29 @@
                                     (app op earg cont)))))))))]
        (ev program result-callback))))
 
-(defn parse [program]
-  (let [p (atom program)]
-    (letfn [(snext [cs] (apply str (next cs)))
-            (parse-out []
-              (condp re-find @p
-                #"^`" (do (swap! p snext) (let [a (parse-out), b (parse-out)] ["`" [a b]]))
-                #"^[rksivdce@|]" (let [r [(str (first @p)) nil]] (swap! p snext) r)
-                #"^[.?]." (let [result [(str (first @p)) (str (fnext @p))]]
-                            (swap! p #(apply str (nnext %)))
-                            result)
-                #"^(\s+|\#.*)" :>> (fn [ws] (do (swap! p #(apply str (nthnext % (count (ws 1)))))
-                                                (parse-out)))))]
-      (parse-out))))
+
+(defn- getc [in]
+  (let [c (.read in)]
+    (if (neg? c) (throw (Exception. "Unexpected EOF!")) (char c))))
+
+(defn parse-in []
+  (let [c (getc *in*)]
+    (cond (= c \`) (let [a (parse-in), b (parse-in)] ["`" [a b]])
+          (re-find #"[rksivdce@|]" (str c)) [(str c) nil]
+          (or (= c \.) (= c \?)) [(str c) (getc *in*)]
+          (Character/isWhitespace c) (recur)
+          (= \# c) (.readLine *in*)
+          :else (throw (Exception. (str "unknown input character: " c))))))
+
+(defn parse [s] (with-in-str s (parse-in)))
 
 (defn interpret [code] (evaluate (parse code)))
-(defn -main [& args]
-  
-  (interpret "`r```si`k``s ``s`kk `si ``s``si`k ``s`k`s`k ``sk ``sr`k.* i r``si``si``si``si``si``si``si``si``si`k`ki"))
+
+(defn parse-repl [prompt exit]
+  (let [c (.read *in*)]
+    (cond (neg? c) exit,
+          (= (char c) \newline) prompt
+          :else (do (.unread *in* c) (parse-in)))))
+
+(defn -main  [& args] (main/repl :eval evaluate, :read parse-repl, :prompt #(print "> ")))
+

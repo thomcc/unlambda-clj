@@ -8,11 +8,11 @@
   (is (= ["k" nil] (parse "kk"))))
 
 (deftest test-parse-dotq
-  (is (= ["." "a"] (parse ".a")))
-  (is (= ["." "`"] (parse ".`")))
-  (is (= ["?" "#"] (parse "?#")))
-  (is (= ["." " "] (parse ". ")))
-  (is (= ["?" "?"] (parse "??"))))
+  (is (= ["." \a] (parse ".a")))
+  (is (= ["." \`] (parse ".`")))
+  (is (= ["?" \#] (parse "?#")))
+  (is (= ["." \space] (parse ". ")))
+  (is (= ["?" \?] (parse "??"))))
 
 
 (deftest test-parse-app
