@@ -1,6 +1,5 @@
 (ns unlambda-clj.core)
 
-
 (def cur-char (atom nil))
 
 (defn evaluate
@@ -21,8 +20,8 @@
                  "d1" #(ev ["`" [closure, arg]] cont)
                  "e" (result-callback arg)
                  "@" (do (reset! cur-char (.read *in*))
-                         #(ev ["`" [arg [(if @cur-char "i" "v") nil]]] cont))
-                 "|" #(ev ["`" [arg (if @cur-char ["." @cur-char] ["v" nil])]] cont)
+                         #(ev ["`" [arg [(if (= @cur-char -1) "v" "i") nil]]] cont))
+                 "|" #(ev ["`" [arg (if (= -1 @cur-char) ["v" nil] ["." @cur-char])]] cont)
                  "?" #(ev ["`" [arg [(if (= @cur-char closure) "i" "v") nil]]] cont)
                  "c" #(ev ["`" [arg ["c1" cont]]] cont)
                  "c1" #(closure arg)))

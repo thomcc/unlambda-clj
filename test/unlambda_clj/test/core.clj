@@ -180,7 +180,13 @@
         "`r```s``s`k`s`kd``ssi`k.*i"
         "`r```s``s`k`s`kds`k.*i")))
 
+(deftest test-cuan
+  "test various non-infinitely-looping programs from CUAN"
+  (is (= "\n\n\n*\n\n**\n**\n\n***\n***\n***\n\n****\n****\n****\n****\n\n*****\n*****\n*****\n*****\n*****\n\n******\n******\n******\n******\n******\n******\n\n*******\n*******\n*******\n*******\n*******\n*******\n*******\n\n********\n********\n********\n********\n********\n********\n********\n********\n"
+         (unlambdify "`r```si`k``s ``s`kk `si ``s``si`k ``s`k`s`k ``sk ``sr`k.* i r``si``si``si``si``si``si``si``si``si`k`ki"))))
 
+(deftest test-input
+  (is (= "abc" (unlambdify "```s`d`@|i`ci" "abc"))))
 
 
 
