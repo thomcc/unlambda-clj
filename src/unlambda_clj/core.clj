@@ -4,6 +4,7 @@
 (def cur-char (atom nil))
 
 (defn- bounce
+  "like trampoline, but evaluates to nil, and doesn't ever call the result of the function given to it."
   ([f] (trampoline #(do (f) nil)))
   ([f & args] (bounce #(apply f args))))
 
@@ -11,6 +12,7 @@
   ([program] (evaluate program identity))
   ([program result-callback]
      (letfn [(app [[func closure] arg cont]
+ ;              (println (str "ARGS TO APP: " [[func closure] arg]))
                (case func
                  "." (do (.write *out* closure) (bounce cont arg))
                  "r" (do (.write *out* "\n") (bounce cont arg))
@@ -19,26 +21,28 @@
                  "k1" (bounce cont closure)
                  "s" (bounce cont ["s1" arg])
                  "s1" (bounce cont ["s2" [closure, arg]])
-                 "s2" (let [[f1 f2] closure]
-                        (recur f1 arg (fn [r1] (app f2 arg (fn [r2] (app r1 r2 cont))))))
+                 "s2" (let [[f1 f2] closure] (ev ["`" [["`" [f1 arg]] ["`" [f2 arg]]]] cont))
                  "v" (bounce cont ["v", nil])
                  "d1" (ev ["`" [closure, arg]], #(bounce cont %))
                  "e" (result-callback arg)
                  "@" (do (reset! cur-char (.readChar *in*))
-                          (ev ["`" [arg [(if @cur-char "i" "v") nil]]] cont))
+                         (ev ["`" [arg [(if @cur-char "i" "v") nil]]] cont))
                  "|" (ev ["`" [arg (if @cur-char ["." @cur-char] ["v" nil])]] cont)
                  "?" (ev ["`" [arg [(if (= @cur-char closure) "i" "v") nil]]] cont)
                  "c" (ev ["`" [arg ["c1" cont]]] cont)
                  "c1" (bounce closure arg)))
              (ev [[func closure] cont]
+;               (println (str "ARGS TO EV: " [func closure]))
                (if-not (= func "`")
                  (bounce cont [func closure])
                  (let [[func arg] closure]
                    (recur func
-                          (fn [efunc]
-                            (println (str "EFUNC IS " efunc))
-                            (if (= "d" (efunc 0)) (bounce cont ["d1" arg])
-                                (ev arg (fn [earg] (app efunc earg (fn [res] (bounce cont res)))))))))))]
+                     (fn [op]
+;                       (println (str "OP IS " op))
+                       (if (= "d" (first op))
+                         (bounce cont ["d1" arg])
+                         (ev arg (fn [earg]
+                                   (app op earg (fn [res] (bounce cont res)))))))))))]
        (ev program result-callback))))
 
 (defn parse [program]

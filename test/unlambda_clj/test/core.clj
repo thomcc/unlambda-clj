@@ -31,13 +31,13 @@
     (testing "produces a *"
       (are [code] (= "*\n" (unlambdify code))
            "`r`.*i"
-           "`r`d`.*i"
            "`r``d.*i "
            "`r``dd`.*i"
            "`r```sd.*i"
            "`r```s`kd`.*ii"))
     (testing "produces a blank line"
       (are [code] (= "\n" (unlambdify code))
+           "`r`d`.*i"
            "`r```kdi`.*i"
            "`r``id`.*i")))
   (testing "abstraction elimination from `.*i"
