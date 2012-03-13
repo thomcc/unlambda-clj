@@ -1,13 +1,11 @@
 # unlambda-clj
 
-FIXME: write description
+Unlambda in some Clojure.
 
-## Usage
 
-FIXME: write
 
 ## License
 
-Copyright (C) 2012 FIXME
+Copyright (C) 2012 Thom Chiovoloni
 
 Distributed under the Eclipse Public License, the same as Clojure.
