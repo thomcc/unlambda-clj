@@ -1,65 +1,65 @@
 (ns unlambda-clj.core
+  (:refer-clojure :rename {read core-read, eval core-eval, apply core-apply})
   (:use [clojure.main :only [repl]]))
 
-(def cur-char (atom nil))
+(declare eval apply read)
 
-(defn evaluate [program]
-  (letfn [(app [[func closure] arg cont]
-            (case func
-              "." (do (.write *out* (int closure)) #(cont arg))
-              "r" (do (.write *out* (int \newline)) #(cont arg))
-              "i" #(cont arg)
-              "k" #(cont ["k1" arg])
-              "k1" #(cont closure)
-              "s" #(cont ["s1" arg])
-              "s1" #(cont ["s2" [closure, arg]])
-              "s2" (let [[f1 f2] closure] #(ev ["`" [["`" [f1 arg]] ["`" [f2 arg]]]] cont))
-              "v" #(cont ["v", nil])
-              "d1" #(ev ["`" [closure, arg]] cont)
-              "e" arg
-              "@" (do (reset! cur-char (.read *in*))
-                      #(ev ["`" [arg [(if (= @cur-char -1) "v" "i") nil]]] cont))
-              "|" #(ev ["`" [arg (if (= -1 @cur-char) ["v" nil] ["." @cur-char])]] cont)
-              "?" #(ev ["`" [arg [(if (= @cur-char closure) "i" "v") nil]]] cont)
-              "c" #(ev ["`" [arg ["c1" cont]]] cont)
-              "c1" #(closure arg)))
-          (ev [[func closure] cont]
-            (if-not (= func "`")
-              (trampoline cont [func closure])
-              (let [[func arg] closure]
-                (recur func
-                       (fn [op]
-                         (if (= "d" (first op))
-                           #(cont ["d1" arg])
-                           #(ev arg (fn [earg]
-                                      (app op earg cont)))))))))]
-    (ev program identity)))
+(defn- getc [in] (let [c (.read in)] (if (= -1 c) (throw (Exception. "Unexpected EOF!")) (char c))))
 
+(def reader-map "a map of characters to the functions which parse them"
+  (reduce (fn [h c] (assoc h c #(vector (keyword (str c)))))
+          {\@ #(vector :at),                 \r #(vector :.), ; map of chars needing special handling
+           \? #(vector :? (getc *in*)),      \. #(vector :. (getc *in*)),
+           \# #(do (.readLine *in*) (read)), \` #(let [a (read), b (read)] [:ap [a b]])}
+          (seq "ksivdce|"))) ; chars which read as (vector (keyword (str c)))
+(defn read "read a single unlambda expression from *in*"
+  ([] (let [c (getc *in*)]
+        (if-let [f (reader-map c)] (f)
+                (if (Character/isWhitespace c) (recur)
+                    (throw (Exception. (str "unknown input character: " c))))))))
 
-(defn- getc [in]
-  (let [c (.read in)]
-    (if (neg? c) (throw (Exception. "Unexpected EOF!")) (char c))))
+(def cchar "The current character" (atom nil))
 
-(defn parse-in []
-  (let [c (getc *in*)]
-    (cond (= c \`) (let [a (parse-in), b (parse-in)] ["`" [a b]])
-          (re-find #"[rksivdce@|]" (str c)) [(str c) nil]
-          (or (= c \.) (= c \?)) [(str c) (getc *in*)]
-          (Character/isWhitespace c) (recur)
-          (= \# c) (do (.readLine *in*) (recur))
-          :else (throw (Exception. (str "unknown input character: " c))))))
+(defn eval [[func scope :as f] cont]
+  (if-not (= func :ap) (trampoline cont f)
+          (let [[func arg] scope]
+            (recur func (fn [eved-f]
+                          (if (= :d (first eved-f)) #(cont [:d1 arg])
+                              #(eval arg (fn [eved-a] (apply eved-f eved-a cont)))))))))
 
-(defn parse [s] (with-in-str s (parse-in)))
+(defmulti apply "applies a unlambda function (a vector of the name and, for lack of a better term, scope) to an arg."
+  (fn [func arg cont] (func 0)))
 
+(defmethod apply :default [[f] & _]     (throw (IllegalArgumentException. (str "unknown function: " f))))
+(defmethod apply :.  [[f ch] a cc]      (do (.write *out* (int (or ch \newline))) #(cc a))) ; print ch or \n
+(defmethod apply :i  [f a cc]           #(cc a)) ; identity
+(defmethod apply :v  [f a cc]           #(cc [:v])) ; ignore arg, return :v
+(defmethod apply :k  [f a cc]           #(cc [:k1 a])) ; curry to k1
+(defmethod apply :k1 [[f s] a cc]       #(cc s)) ; (fn [x y] x)
+(defmethod apply :s  [f a cc]           #(cc [:s1 a])) ; curry to s1
+(defmethod apply :s1 [[f s] a cc]       #(cc [:s2 [s a]])) ; curry to s2
+(defmethod apply :s2 [[f [f1 f2]] a cc] #(eval [:ap [[:ap [f1 a]] [:ap [f2 a]]]] cc)) ; (fn [x y z] ((x z) (y z)))
+(defmethod apply :d1 [[f s] a cc]       #(eval [:ap [s a]] cc)) ; called delayed function on a
+(defmethod apply :c  [f a cc]           #(eval [:ap [a [:c1 cc]]] cc)); eval [:c1 cc]
+(defmethod apply :c1 [[f s] a _]        #(s a)) ; s is the current continuation
+(defmethod apply :e  [f a cc]           a) ; simply return the value to exit.
+(defmethod apply :?  [[f ch] a cc] ; compare cchar to ch, return i if they're the same, v otherwise
+  #(eval (if (= ch (char @cchar)) [:ap [a [:i]]] [:ap [a [:v]]]) cc))
 
+(defmethod apply :|  [f a cc] ; if cchar is EOF or if cchar hasnt' been set yet, return v, otherwise .<cchar>
+  #(eval (if (and @cchar (not (neg?  @cchar))) [:ap [a [:. @cchar]]] [:ap [a [:v]]]) cc))
 
-(defn interpret [code] (evaluate (parse code)))
+(defmethod apply :at [f a cc] ; set cchar to character read from *in*. return :v if eof, :i otherwise
+  (do (reset! cchar (.read *in*))
+      #(eval [:ap [a [(if (= @cchar -1) :v :i)]]] cc)))
 
-(defn parse-repl [prompt exit]
+(defn read-repl [prompt exit]
   (let [c (.read *in*)]
-    (cond (neg? c) exit,
-          (= (char c) \newline) prompt,
-          :else (do (.unread *in* c) (parse-in)))))
+    (if (neg? c) exit (do (.unread *in* c) (read)))))
 
-(defn -main  [& args] (repl :eval evaluate, :read parse-repl, :prompt #(print "> "), :need-prompt #(identity true)))
+(defn -main  [& args]
+  (repl :eval #(eval % identity),
+        :read (fn [e p] (let [c (.read *in*)] (if (= -1 c) e (do (.unread *in* c) (read))))),
+        :prompt #(print "> "),
+        :need-prompt #(identity true)))
 
