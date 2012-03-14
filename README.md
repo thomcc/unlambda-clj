@@ -1,8 +1,8 @@
 # Unlambda-clj
 
-Unlambda is a Clojure implementation of David Madore's brilliant esoteric
-language, unlambda. It implements the "unlambda 2.0 standard", and passes every
-test that I've been able to find on the internet or come up with myself!
+Unlambda-clj is, as its name might suggest, a Clojure implementation of
+unlambda. It implements the "unlambda 2.0 standard", and passes every test that
+I've been able to find on the internet or come up with myself! 
 
 ## Usage
 
@@ -16,22 +16,28 @@ Which should print "Clojure rocks!" ten times.
 
 ## What is Unlambda?
 
-Unlambda is an esoteric programming language.  Unlike the typical Turing-machine
-based esoteric languages, unlambda is based on the untyped lambda
-calculus. 
+Unlambda is an esoteric programming language written by David Madore.  Unlike
+the typical Turing-machine based esoteric languages, unlambda is based on the
+untyped lambda calculus.
 
 If you're familiar with functional programming, it shouldn't surprise you that
 the untyped lambda calculus is Turing-complete, however it may surprise that
-*you don't even need lambda*.  Unlambda, in fact, does away with lambda
-abstraction altogether, and instead uses the S, K, and I combinators to achieve
-Turing-completeness (really just S and K).
+*you don't even need lambda* to achieve that.  Unlambda, in fact, does away with lambda
+abstraction altogether, and instead uses the S and K combinators to achieve
+Turing-completeness (For more on this, see
+[the Wikipedia article on SKI combinator calculus](http://en.wikipedia.org/wiki/SKI_combinator_calculus)).
 
 ## More about Unlambda
 
 Unlambda functions are applied to each other with the `` ` `` (back-quote)
-character.  Every function takes exactly one argument (multiple arguments can be
-simulated via currying), meaning that this notation is unambiguous. Unlambda has
-the following built in functions:
+character. Back-quotes are by far the most common character in most unlambda
+programs, as to get anything done you must perform a great deal of function
+application! Every function takes exactly one argument (multiple arguments can be
+simulated via currying), meaning that the back-quote notation is unambiguous.
+
+### Built-ins
+
+Unlambda has the following built in functions (which are all present in unlambda-clj):
 
 * `k`: The K combinator. Equivalent to the following Clojure code: `(fn [x] (fn
   [y] x))`. That is, ``` ``k<x><y> ``` evaluates to `<x>`. 
@@ -63,11 +69,12 @@ the following built in functions:
   then `` `|<x> `` evaluates to `` `<x>.<current character> ``. If the current
   character has not been set yet, then `` `|<x> `` evaluates to `` `<x>v ``. 
 
-Additionally, this implementation discards all white-space, and treats `#` as a
-comment character.  
+Additionally, this implementation discards all white-space (except when
+appearing after a `.` or `?`), and treats `#` as an indicator to skip to the
+next line (e.g. a single line comment).
 
 For even more information, including how to actually go about writing unlambda
-programs, consult <http://www.madore.org/~david/programs/unlambda/>
+programs, consult the official page on unlambda http://www.madore.org/~david/programs/unlambda/
 
 
 ```
