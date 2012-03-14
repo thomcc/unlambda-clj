@@ -34,19 +34,19 @@
 (defmethod apply :.  [[f ch] a cc]      (do (.write *out* (int (or ch \newline))) #(cc a))) ; print ch or \n
 (defmethod apply :i  [f a cc]           #(cc a)) ; identity
 (defmethod apply :v  [f a cc]           #(cc [:v])) ; ignore arg, return :v
-(defmethod apply :k  [f a cc]           #(cc [:k1 a])) ; curry to k1
+(defmethod apply :k  [f a cc]           #(cc [:k1 a])) ; curry to :k1
 (defmethod apply :k1 [[f s] a cc]       #(cc s)) ; (fn [x y] x)
-(defmethod apply :s  [f a cc]           #(cc [:s1 a])) ; curry to s1
-(defmethod apply :s1 [[f s] a cc]       #(cc [:s2 [s a]])) ; curry to s2
+(defmethod apply :s  [f a cc]           #(cc [:s1 a])) ; curry to :s1
+(defmethod apply :s1 [[f s] a cc]       #(cc [:s2 [s a]])) ; curry to :s2
 (defmethod apply :s2 [[f [f1 f2]] a cc] #(eval [:ap [[:ap [f1 a]] [:ap [f2 a]]]] cc)) ; (fn [x y z] ((x z) (y z)))
 (defmethod apply :d1 [[f s] a cc]       #(eval [:ap [s a]] cc)) ; called delayed function on a
 (defmethod apply :c  [f a cc]           #(eval [:ap [a [:c1 cc]]] cc)); eval [:c1 cc]
 (defmethod apply :c1 [[f s] a _]        #(s a)) ; s is the current continuation
 (defmethod apply :e  [f a cc]           a) ; simply return the value to exit.
-(defmethod apply :?  [[f ch] a cc] ; compare cchar to ch, return i if they're the same, v otherwise
+(defmethod apply :?  [[f ch] a cc]         ; compare cchar to ch, return :i if they're the same, :v otherwise
   #(eval (if (= ch (char @cchar)) [:ap [a [:i]]] [:ap [a [:v]]]) cc))
 
-(defmethod apply :|  [f a cc] ; if cchar is EOF or if cchar hasnt' been set yet, return v, otherwise .<cchar>
+(defmethod apply :|  [f a cc] ; if cchar is EOF or if cchar hasnt' been set yet, return :v, otherwise [:. @cchar]
   #(eval (if (and @cchar (not (neg?  @cchar))) [:ap [a [:. @cchar]]] [:ap [a [:v]]]) cc))
 
 (defmethod apply :at [f a cc] ; set cchar to character read from *in*. return :v if eof, :i otherwise
