@@ -252,7 +252,10 @@ k # comments rule!"))))
   (is (= [:d1 [:ap [[:.] [:i]]]] (u "```s`kdri"))))
 
 (deftest test-church-nums-and-printing
-  (is (= "poop poop poop "
-         (us "```si`k``s.p``s.o``s.o``s.p``s. i``si``si``si`ki"))))
+  (is (= "foop foop foop "
+         (us "```si`k``s.f``s.o``s.o``s.p``s. i``si``si``si`ki"))))
 
+(deftest test-quine
+  (let [src "``d.v```s``si`kv``si`k`d`..`.c`.s`.``.``.s`.``.`v``s``sc.```s``sc.```s``sc.d``s``sc..``s``sc.v``s``sc.```s``sc.```s``sc.```s``sc.s``s``sc.```s``sc.```s``sc.s``s``sc.i``s``sc.```s``sc.k``s``sc.v``s``sc.```s``sc.```s``sc.s``s``sc.i``s``sc.```s``sc.k``s``sc.```s``sc.d``s``sc.```s``sc..``s``sc..``s``sc.```s``sc..``s``sc.c``s``sc.```s``sc..``s``sc.s``s``sc.```s``sc..``s``sc.```s``sc.```s``sc..``s``sc.```s``sc.```s``sc..``s``sc.s``s``sc.```s``sc..``s``sc.```s``sc.```s``sc..``s``sc.```s``sc.vv"]
+    (is (= src (us src)))))
 

@@ -1,8 +1,8 @@
 (ns unlambda-clj.core
-  (:refer-clojure :rename {read core-read, eval core-eval, apply core-apply})
+  (:refer-clojure :exclude [read eval apply])
   (:use [clojure.main :only [repl]]))
 
-(declare eval apply read)
+(declare apply read)
 
 (defn- getc [in] (let [c (.read in)] (if (= -1 c) (throw (Exception. "Unexpected EOF!")) (char c))))
 
@@ -29,7 +29,6 @@
 
 (defmulti apply "applies a unlambda function (a vector of the name and, for lack of a better term, scope) to an arg."
   (fn [func arg cont] (func 0)))
-
 (defmethod apply :default [[f] & _]     (throw (IllegalArgumentException. (str "unknown function: " f))))
 (defmethod apply :.  [[f ch] a cc]      (do (.write *out* (int (or ch \newline))) #(cc a))) ; print ch or \n
 (defmethod apply :i  [f a cc]           #(cc a)) ; identity
@@ -54,12 +53,8 @@
       #(eval [:ap [a [(if (= @cchar -1) :v :i)]]] cc)))
 
 (defn read-repl [prompt exit]
-  (let [c (.read *in*)]
-    (if (neg? c) exit (do (.unread *in* c) (read)))))
+  (let [c (.read *in*)] (if (neg? c) exit (do (.unread *in* c) (read)))))
 
 (defn -main  [& args]
-  (repl :eval #(eval % identity),
-        :read (fn [e p] (let [c (.read *in*)] (if (= -1 c) e (do (.unread *in* c) (read))))),
-        :prompt #(print "> "),
-        :need-prompt #(identity true)))
+  (repl :eval #(eval % identity), :read read-repl, :prompt #(print "> "), :need-prompt #(identity true)))
 
