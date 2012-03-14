@@ -59,6 +59,7 @@ s
 k # comments rule!"))))
 ;; the following tests are from
 ;; ftp://quatramaran.ens.fr/pub/madore/unlambda/tests/unlambda-tests
+;; excessively tests r, .x, d, s, k, and i.
 (deftest test-simple-elims
   (testing "produces a *"
     (are [code] (= "*\n" (us code))
@@ -222,8 +223,7 @@ k # comments rule!"))))
       "`r```s``s`k`s`kd``ssi`k.*i"
       "`r```s``s`k`s`kds`k.*i")))
 
-(deftest test-cuan
-  "test various non-infinitely-looping programs from CUAN"
+(deftest test-squares "neato example program from CUAN"
   (is (= "\n\n\n*\n\n**\n**\n\n***\n***\n***\n\n****\n****\n****\n****\n\n*****\n*****\n*****\n*****\n*****\n\n******\n******\n******\n******\n******\n******\n\n*******\n*******\n*******\n*******\n*******\n*******\n*******\n\n********\n********\n********\n********\n********\n********\n********\n********\n"
          (us "`r```si`k``s ``s`kk `si ``s``si`k ``s`k`s`k ``sk ``sr`k.* i r``si``si``si``si``si``si``si``si``si`k`ki"))))
 
@@ -244,10 +244,15 @@ k # comments rule!"))))
 
 (deftest test-e
   (is (= [:. \a] (u "``e.ai"))))
+
 (deftest test-c
   (is (= :c1 ((u "``.*`ci`.@`ce") 0))))
 
+(deftest test-d ; ensure proper implementation of d
+  (is (= [:d1 [:ap [[:.] [:i]]]] (u "```s`kdri"))))
 
-
+(deftest test-church-nums-and-printing
+  (is (= "poop poop poop "
+         (us "```si`k``s.p``s.o``s.o``s.p``s. i``si``si``si`ki"))))
 
 

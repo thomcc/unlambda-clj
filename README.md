@@ -1,16 +1,20 @@
 # Unlambda-clj
 
-Unlambda-clj is a clojure implementation of David Madore's brilliant language:
-unlambda.
+Unlambda is a Clojure implementation of David Madore's brilliant esoteric
+language, unlambda. It implements the "unlambda 2.0 standard", and passes every
+test that I've been able to find on the internet or come up with myself!
 
-Running main will start a repl, you can tell everything is working by entering
+## Usage
 
-    `r``````````````.C.l.o.j.u.r.e. .r.o.c.k.s.!i
+Running main (by way of `lein trampoline run`) will start a repl, you can tell everything is working by entering
 
-Which should print "Clojure rocks!" to out.
+    ```si`k``s.C``s.l``s.o``s.j``s.u``s.r``s.e
+    ``s. ``s.r``s.o``s.c``s.k``s.s``s.!``sri``
+    si``si``si``si``si``si``si``si``si``si`ki
 
+Which should print "Clojure rocks!" ten times.
 
-## Unlambda: The Esoteric Language of the Future, Today!
+## What is Unlambda?
 
 Unlambda is an esoteric programming language.  Unlike the typical Turing-machine
 based esoteric languages, unlambda is based on the untyped lambda
@@ -22,7 +26,7 @@ the untyped lambda calculus is Turing-complete, however it may surprise that
 abstraction altogether, and instead uses the S, K, and I combinators to achieve
 Turing-completeness (really just S and K).
 
-## Functions, huh?
+## More about Unlambda
 
 Unlambda functions are applied to each other with the `` ` `` (back-quote)
 character.  Every function takes exactly one argument (multiple arguments can be
@@ -59,10 +63,17 @@ the following built in functions:
   then `` `|<x> `` evaluates to `` `<x>.<current character> ``. If the current
   character has not been set yet, then `` `|<x> `` evaluates to `` `<x>v ``. 
 
+Additionally, this implementation discards all white-space, and treats `#` as a
+comment character.  
+
+For even more information, including how to actually go about writing unlambda
+programs, consult <http://www.madore.org/~david/programs/unlambda/>
+
 
 ```
      ``.*`ci`.@`ci
 ```
+
 ## License
 
 Copyright (C) 2012 Thom Chiovoloni
