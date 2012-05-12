@@ -41,33 +41,17 @@ Unlambda has the following built in functions (which are all present in unlambda
 
 * `k`: The K combinator. Equivalent to the following Clojure code: `(fn [x] (fn
   [y] x))`. That is, ``` ``k<x><y> ``` evaluates to `<x>`. 
-* `s`: The S combinator. Equivalent to the following Clojure code: `(fn [x] (fn
-  [y] (fn [z] ((x z) (y z))))`.  That is, ```` ```s<x><y><z> ```` evaluates to
-  ``` ``<x><z>`<y><z> ```.
-* `i`: The I combinator.  Returns its argument (identity). The same as ``` ``skk
-  ```.
+* `s`: The S combinator. Equivalent to the following Clojure code: `(fn [x] (fn [y] (fn [z] ((x z) (y z))))`.  That is, ```` ```s<x><y><z> ```` evaluates to ``` ``<x><z>`<y><z> ```.
+* `i`: The I combinator.  Returns its argument (identity). The same as ``` ``skk```.
 * `v`: Void.  Discards its argument and returns `v`.
-* `c`: Call-with-current-continuation.  Applies its argument to the current
-  continuation (e.g. `` `c<x> `` evaluates to `` `<x><current-continuation> ``). More
-  information on what this means is can be found in various places on the
-  internet.
-* `d`: Delay (special form). Delays the evaluation of its argument `<f>` until it is
-  forced by being applied to another argument `<a>`.  When that occurs, `<a>` will
-  be evaluated before `<f>`, and then `<f>` will be applied to `<a>`.
-* `.x`: Write. For all characters `x`, `.x` is a function which prints out the
-  character `x`, and returns its argument.
-* `r`: Shorthand for `.<literal newline>`. That is, `r` prints a newline, and
-  returns its argument.
-* `e`: Exit. Halts evaluation, returning its argument as the result of the
-  program.
-* `@`: Read: Reads a single character.  Sets the "current character" to the
-  value of the character read in (from `*in*`).
-* `?x`: Compare Read: Similar to `.x`, `?x` is defined for all characters `x`.
-  It compares `x` to the "current character".  If they have the same
-  value, it returns `i`, otherwise `v`.
-* `|`: Print Current Character: If a value for the "current character" exists,
-  then `` `|<x> `` evaluates to `` `<x>.<current character> ``. If the current
-  character has not been set yet, then `` `|<x> `` evaluates to `` `<x>v ``. 
+* `c`: Call-with-current-continuation.  Applies its argument to the current continuation (e.g. `` `c<x> `` evaluates to `` `<x><current-continuation> ``). More information on what this means is can be found in various places on the internet.
+* `d`: Delay (special form). Delays the evaluation of its argument `<f>` until it is forced by being applied to another argument `<a>`.  When that occurs, `<a>` will be evaluated before `<f>`, and then `<f>` will be applied to `<a>`.
+* `.x`: Write. For all characters `x`, `.x` is a function which prints out the character `x`, and returns its argument.
+* `r`: Shorthand for `.<literal newline>`. That is, `r` prints a newline, and returns its argument.
+* `e`: Exit. Halts evaluation, returning its argument as the result of the program.
+* `@`: Read: Reads a single character.  Sets the "current character" to the value of the character read in (from `*in*`).
+* `?x`: Compare Read: Similar to `.x`, `?x` is defined for all characters `x`. It compares `x` to the "current character".  If they have the same value, it returns `i`, otherwise `v`.
+* `|`: Print Current Character: If a value for the "current character" exists, then `` `|<x> `` evaluates to `` `<x>.<current character> ``. If the current character has not been set yet, then `` `|<x> `` evaluates to `` `<x>v ``. 
 
 Additionally, this implementation discards all white-space (except when
 appearing after a `.` or `?`), and treats `#` as an indicator to skip to the
