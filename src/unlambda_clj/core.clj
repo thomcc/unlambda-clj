@@ -79,6 +79,10 @@
 (defn read-repl [prompt exit]
   (let [c (.read *in*)] (if (neg? c) exit (do (.unread *in* c) (read)))))
 
+(defn eval-string [str]
+  (binding [*in* (clojure.lang.LineNumberingPushbackReader. (java.io.StringReader. str))]
+    (eval (read) identity)))
+
 (defn -main  [& args]
   (repl :eval #(eval % identity), :read read-repl, :prompt #(print "> "), :need-prompt #(identity true)))
 
