@@ -1,6 +1,7 @@
 (ns unlambda-clj.translator
   (:require [unlambda-clj.core :as core]
-            [clojure.java.shell :as shell]))
+            [clojure.java.shell :as shell]
+            [clojure.walk :as walk]))
 
 
 (def db-file  (java.io.File. "fns-database.clj"))
@@ -13,8 +14,6 @@
   (->> (shell/sh unlambda-native-path :in str)
        :out
        println))
-
-
 
 (defn get-functions-from-db []
   (if (.exists db-file)
@@ -30,42 +29,40 @@
 (defn built-in? [fn]
   (->> fn str first #{\k \s \i \v \c \d \e \@ \| \. \?} boolean))
 
-(declare to-unlambda-sym)
 (declare translate-fn)
+(declare translate-exp)
 
 (defn get-translation [fn]
   (or (@fns-translations fn)
-      (when-let [{:keys [args body]} (@fns-db fn)]
-        (let [translation (translate-fn args body)]
+      (if-let [{:keys [args body]} (@fns-db fn)]
+        (let [translation (if (string? body) (map (comp symbol str) body)
+                            (translate-fn args body))]
           (swap! fns-translations assoc fn translation)
-          translation))))
-
-(defn flatten-exp [exp]
-  (if (coll? exp)
-    (concat (repeat (dec (count exp)) bq)
-            (mapcat flatten-exp exp))
-    [exp]))
-
-(defn substitute-fns [exp]
-  (let [fns @fns-db]
-    (mapcat #(if-let [tran (get-translation %)]
-               tran
-               [%])
-            exp)))
+          translation)
+        fn)))
 
 (defn eliminate-var [exp var]
   (mapcat #(cond (= % bq) [bq bq 's]
                  (= % var) ['i]
                  :else [bq 'k %])
-
           exp))
 
 (defn translate-exp [exp]
-  (substitute-fns (flatten-exp exp)))
+  (if (coll? exp)
+    (let [[f & rst] exp]
+      (if (= 'fn f)
+        (apply translate-fn rst)
+        (flatten
+         (concat (repeat (count rst) bq)
+                 [(get-translation f)]
+                 (map translate-exp rst)))))
+    (get-translation exp)))
 
 (defn translate-fn [args body]
   (let [exp (translate-exp body)]
-    (reduce eliminate-var exp (reverse args))))
+    (reduce eliminate-var
+            (if (coll? exp) exp [exp])
+            (reverse args))))
 
 (defn to-unlambda-sym [exp]
   (apply str (translate-exp exp)))
