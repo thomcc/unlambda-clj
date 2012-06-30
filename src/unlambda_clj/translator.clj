@@ -35,8 +35,7 @@
 (defn get-translation [fn]
   (or (@fns-translations fn)
       (if-let [{:keys [args body]} (@fns-db fn)]
-        (let [translation (if (string? body) (map (comp symbol str) body)
-                            (translate-fn args body))]
+        (let [translation (translate-fn args body)]
           (swap! fns-translations assoc fn translation)
           translation)
         fn)))
@@ -48,15 +47,15 @@
           exp))
 
 (defn translate-exp [exp]
-  (if (coll? exp)
-    (let [[f & rst] exp]
-      (if (= 'fn f)
-        (apply translate-fn rst)
-        (flatten
-         (concat (repeat (count rst) bq)
-                 [(get-translation f)]
-                 (map translate-exp rst)))))
-    (get-translation exp)))
+  (cond (coll? exp)
+        (let [[f & rst] exp]
+          (if (= 'fn f)
+            (apply translate-fn rst)
+            (flatten
+             (concat (repeat (count rst) bq)
+                     (map translate-exp exp)))))
+        (string? exp) (map (comp symbol str) exp)
+        :else (get-translation exp)))
 
 (defn translate-fn [args body]
   (let [exp (translate-exp body)]
@@ -65,6 +64,7 @@
             (reverse args))))
 
 (defn to-unlambda-sym [exp]
+  #_(println exp "to" (translate-exp exp))
   (apply str (translate-exp exp)))
 
 (defmacro defu [name args body]
@@ -83,6 +83,7 @@
   `(eval-native (to-unlambda-sym (quote ~exp))))
 
 (defn show-fns []
-  (doseq [[name {args :args}] @fns-db]
-    (println name args)))
+  (doseq [[name {:keys [args body]}] @fns-db]
+    (println (list name args body))))
+
 

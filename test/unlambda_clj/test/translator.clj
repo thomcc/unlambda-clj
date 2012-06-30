@@ -15,6 +15,7 @@
 (defu 2 [f x] (f (f x)))
 (defu print [n] (n .* i))
 (defu three-as-str [] "``s``s`ksk``s``s`kski")
+(defu dec [n f x] (n (fn [g h] (h (g f))) (fn [u] x) i))
 
 (deftest test-simple
   (are [result exp] (= result (run exp))
@@ -28,13 +29,21 @@
         "*" (print 1)
         "**" (print (+ 1 1))
         "******" (print (+ 2 (* 2 2)))))
-  (testing "string expression"
-    (is (= "***" (run (print three-as-str))))))
+
+  (testing "fn call in the first position of expression"
+    (is (= "**" (run ((2 .*) i))))))
+
+(deftest test-string-expressions
+  (are [result exp] (= result (run exp))
+       "***" (print three-as-str)
+       "**" (print (+ "i" "i"))))
 
 (deftest test-anonymous-fns
   (are [result exp] (= result (run exp))
        "*" (print (fn [x] x))
-       "**" (print (fn [f x] (f (f x))))))
+       "**" (print (fn [f x] (f (f x))))
+       "***" (print (dec (* 2 2)))))
+
 
 
 
