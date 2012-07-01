@@ -69,6 +69,7 @@
 
 (defmacro defu [name args body]
   `(do (swap! fns-db assoc (quote ~name) {:args (quote ~args) :body (quote ~body)})
+       (reset! fns-translations {})
        (quote ~name)))
 
 (defmacro undefu [name]
