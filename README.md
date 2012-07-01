@@ -65,6 +65,51 @@ programs, consult the official page on unlambda http://www.madore.org/~david/pro
      ``.*`ci`.@`ci
 ```
 
+## Clojure to unlambda translator
+
+Translate expression in clojure-like syntax to unlamba. Allow to define custom functions that saved in file and stored between sessions.
+
+### Usage
+
+```clojure
+user=> (use '[unlambda-clj.translator :only (defu run-unlambda to-unlambda)])
+```
+
+Translate to unlambda:
+```clojure
+user=> (to-unlambda (.o (.l (.l (.e (.H i))))))
+`.o`.l`.l`.e`.Hi
+```
+Run expression:
+```clojure
+user=> (run-unlambda (.o (.l (.l (.e (.H i))))))
+Hello
+```
+Define custom functions:
+```clojure
+user=> (defu print-number [n] (n .* i))
+user=> (defu 2 [f x] (f (f x)))
+user=> (run-unlambda (print-number 2))
+**
+```
+You can also insert "raw" unlambda code using string. E.g. we can define `delay` and `force` functions to delay evaluation of some function:
+```clojure
+user=> (defu delay [] "d`k")
+user=> (defu force [f] (f i))
+user=> (run-unlambda (delay (print-number 2))
+user=> (run-unlambda (force (delay (print-number 2))))
+**
+```
+
+Anonymous functions:
+```clojure
+user=> (run-unlambda (print-number (fn [f x] (f (f x)))))
+**
+```
+### Evaluation
+
+`run-unlambda` uses external unlambda interpreter for now. To use it you need to get one, e.g. from [here](http://www.madore.org/~david/programs/unlambda/#distrib). And change `unlambda-native-path` var in `translator.clj`.
+
 ## License
 
 Copyright (C) 2012 Thom Chiovoloni
