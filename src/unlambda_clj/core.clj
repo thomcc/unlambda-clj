@@ -52,7 +52,7 @@
   "Evaluate a function, call cont with the result. "
   [[func scope :as f] cont]
   (if-not (= func :ap)
-    (trampoline cont f)
+    #(cont f)
     (let [[func arg] scope]
       (recur
        func
@@ -174,8 +174,14 @@
       (do (.unread *in* c)
           (read)))))
 
+
+(defn repl-eval
+  "Evaluate a single piece of parsed unlambda code, and return the result."
+  [form]
+  (trampoline eval form identity))
+
 (defn -main  [& args]
-  (repl :eval #(eval % identity)
+  (repl :eval repl-eval
         :read read-repl
         :prompt #(print "> "),
         :need-prompt #(identity true)))
