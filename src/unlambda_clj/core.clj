@@ -180,6 +180,10 @@
   [form]
   (trampoline eval form identity))
 
+(defn eval-string [str]
+  (binding [*in* (clojure.lang.LineNumberingPushbackReader. (java.io.StringReader. str))]
+    (repl-eval (read))))
+
 (defn -main  [& args]
   (repl :eval repl-eval
         :read read-repl
