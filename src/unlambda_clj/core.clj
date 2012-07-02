@@ -182,7 +182,7 @@
 
 (defn eval-string [str]
   (binding [*in* (clojure.lang.LineNumberingPushbackReader. (java.io.StringReader. str))]
-    (eval (read) identity)))
+    (repl-eval (read))))
 
 (defn -main  [& args]
   (repl :eval repl-eval

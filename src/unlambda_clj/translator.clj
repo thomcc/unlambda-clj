@@ -6,11 +6,14 @@
 
 (def db-file  (java.io.File. "fns-database.clj"))
 
-(def unlambda-native-path "/home/nikelandjelo/unlambda-2.0.0/c-refcnt/unlambda")
+(def unlambda-native-path "/path/to/native/interpreter")
 
 (def bq (symbol "`"))
 
-(defn eval-native [str]
+(defn eval-native
+  "Evaluates unlambda code (string) using native intepreter.
+  Interpreter specified by 'unlambda-native-path' var."
+  [str]
   (->> (shell/sh unlambda-native-path :in str)
        :out
        println))
@@ -112,7 +115,8 @@
   Usage: (run-unlambda (.o (.l (.l (.e (.H i))))))
   writes \"Hello\" to *out*"
   [exp]
-  `(eval-native (to-unlambda-sym (quote ~exp))))
+  `(do (core/eval-string (to-unlambda-sym (quote ~exp)))
+       (println)))
 
 (defn show-fns
   "Prints all user defined functions to *out* with args and bodies"

@@ -106,9 +106,7 @@ Anonymous functions:
 user=> (run-unlambda (print-number (fn [f x] (f (f x)))))
 **
 ```
-### Evaluation
-
-`run-unlambda` uses external unlambda interpreter for now. To use it you need to get one, e.g. from [here](http://www.madore.org/~david/programs/unlambda/#distrib). And change `unlambda-native-path` var in `translator.clj`.
+Note: basic functions such as +, *, -, 0, 1, 2, true, false and others are not provided, so you need to write them by yourself.
 
 ## License
 
