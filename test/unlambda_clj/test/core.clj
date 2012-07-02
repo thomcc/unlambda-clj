@@ -6,7 +6,7 @@
 
 (defn read-str [s] (with-in-str s (read)))
 
-(defn interpret-str [s] (eval (read-str s) identity))
+(defn interpret-str [s] (trampoline eval (read-str s) identity))
 
 (defn u
   "interpret an unlambda expression as a string (w/ optional input), return the result of the expr"
@@ -54,7 +54,7 @@
 # i am diligently commenting my code
 s
 # only whitespace on next line
-                                                                      
+
 # okay lets try to finish this up.
 k # comments rule!"))))
 ;; the following tests are from
@@ -258,4 +258,3 @@ k # comments rule!"))))
 (deftest test-quine
   (let [src "``d.v```s``si`kv``si`k`d`..`.c`.s`.``.``.s`.``.`v``s``sc.```s``sc.```s``sc.d``s``sc..``s``sc.v``s``sc.```s``sc.```s``sc.```s``sc.s``s``sc.```s``sc.```s``sc.s``s``sc.i``s``sc.```s``sc.k``s``sc.v``s``sc.```s``sc.```s``sc.s``s``sc.i``s``sc.```s``sc.k``s``sc.```s``sc.d``s``sc.```s``sc..``s``sc..``s``sc.```s``sc..``s``sc.c``s``sc.```s``sc..``s``sc.s``s``sc.```s``sc..``s``sc.```s``sc.```s``sc..``s``sc.```s``sc.```s``sc..``s``sc.s``s``sc.```s``sc..``s``sc.```s``sc.```s``sc..``s``sc.```s``sc.vv"]
     (is (= src (us src)))))
-
